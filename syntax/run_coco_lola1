@@ -1,0 +1,10 @@
+../../Coco/Coco ./Lola1.atg -trace FP -o . -namespace La1 > ./coco_out.txt
+
+mv ./Parser.h ../La1Parser.h
+mv ./Parser.cpp ../La1Parser.cpp
+
+mv ./La1SynTree.h ..
+mv ./La1SynTree.cpp ..
+
+mv ./La1TokenType.h ..
+mv ./La1TokenType.cpp ..

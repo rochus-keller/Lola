@@ -1,0 +1,96 @@
+// Source: Lola-2: A Logic Description Language, N. Wirth, 24.4.1994 / 1.9.2015
+// Download: https://www.inf.ethz.ch/personal/wirth/Lola/Lola2.pdf
+// Adapted and modified 2019 by Rochus Keller <mailto:me@rochus-keller.ch>
+
+// Modification Steps:
+// - manually copied all productions from PDF to EbnfStudio and adapted syntax
+// - Added top Lola2
+// - corrected grammar according to the "Lola Definition of RISC5 Computer", see https://www.inf.ethz.ch/personal/wirth/Lola/
+// - remove LL(1) first/first ambiguities
+// - Added designator to keep parts of a name together
+// - Added SimpleTypes BIT, BYTE, WORD to keywords
+// - Added VarRegDeclaration
+
+// Top
+
+Lola2 ::= { module }
+
+// 1. Identifiers, integers, and comments
+
+identifier ::= // letter {letter | digit}
+integer ::= // digit {digit} ["H"]
+comment- ::= '(*' '*)' 
+
+// 2. Simple types and array types
+
+type ::= { '[' expression ']' } SimpleType
+SimpleType ::= ( BIT | BYTE | WORD | identifier ) // original nur identifier 
+	| ModuleType // original vermutlich falsch: | MODULE unit ';' identifier
+TypeDeclaration ::= identifier ( '=' | ':=' ) type // original nur '='
+
+// 3. Constant declarations
+
+ConstDeclaration ::= identifier ( '=' | ':=' ) integer ';' // original nur '='
+
+// 4. Variable and register declarations
+
+varlist ::= identifier { ','  identifier} ':'  type
+
+// 5. Expressions
+
+expression ::=  uncondExpr [ '->' expression ':' expression ]	
+uncondExpr ::= simpleExpr  [  ('=' | '#' | '<' | '<=' | '>' | '>=')  simpleExpr ]
+simpleExpr ::= [ '+' | '-'] term { ('|' | '^' | '+' | '-') term }
+term ::= factor { '&'  factor }
+factor ::= variable | integer | '~' factor | constructor | '(' expression ')'
+variable ::= designator
+selector ::= '.' factor | '[' expression [':' expression] ']'
+constructor ::= '{'  element { ','  element} '}'
+element ::= expression [ '!' integer ]
+designator ::= identifier { selector } // helper production
+
+// 6. Assignments and statements
+
+assignment ::= variable ':=' expression // merged into assignment_or_instantiation
+assignment_or_instantiation ::=  // merge of assignment and instantiation
+	designator // entspricht variable oder identifier selector
+	(
+	':=' expression // assignment
+	|  '(' expression { ','  expression} ')' // instantiation
+	)
+statement ::= 
+	// original: [ assignment |  instantiation | TSgate  ]
+	[ assignment_or_instantiation | TSgate  ]
+StatementSequence ::= statement { ';' statement}
+TSgate ::= TS  '(' iogate ',' input ',' output ',' control ')'
+iogate ::= variable
+input ::= variable // from interface
+output ::= expression // to interface
+control ::= expression // 1 for output, 0 for input from interface
+
+// 7. Modules
+
+ModuleType ::= MODULE [ '*' ] unit ';'
+paramlist ::= [ IN | OUT | INOUT ] varlist // original nicht optional; TODO: was ist der Default?
+unit ::= '(' paramlist { ';' paramlist } ')' 
+	( 
+		'^' 
+	| 	';'
+		[ CONST {ConstDeclaration} ]
+		[ TYPE { TypeDeclaration } ]
+		{ VarRegDeclaration }
+		[ BEGIN StatementSequence] END 
+	)
+VarRegDeclaration ::= ( VAR | REG '(' expression ')' ) { varlist ';' }
+instantiation ::= identifier selector 
+	'(' expression { ','  expression} ')' // merged into assignment_or_instantiation
+module ::= MODULE identifier unit identifier '.'
+
+// Helper Tokens
+Comment ::=
+
+// Pragmas
+
+%module ::= 'Lola'
+%namespace ::= 'Ll'
+%suppress ::= ';'

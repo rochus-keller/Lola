@@ -1,0 +1,76 @@
+// Source: Lola: An Object−Oriented Logic Description Language, N. Wirth, 1994
+// in: Tools for digital circuit design using FPGAs
+// Download: https://www.research-collection.ethz.ch/handle/20.500.11850/68724
+
+// Adapted and modified 2019 by Rochus Keller <mailto:me@rochus-keller.ch>
+
+// Modification Steps:
+// - manually copied all productions from PDF to EbnfStudio and adapted syntax
+// - Added top Lola1
+// - remove LL(1) first/first and first/follow ambiguities
+
+Lola1 ::= module
+
+identifier ::= // letter {letter | digit} [''']
+integer ::= // digit {digit}
+LogicValue ::= // '\'0' | '\'1'
+SimpleType ::= BasicType | identifier ['(' ExpressionList ')']
+BasicType ::= BIT | TS | OC
+ExpressionList ::= expression {',' expression}
+type ::= { '[' expression ']' } SimpleType
+ConstDeclaration ::= identifier ':=' expression ';'
+VarDeclaration ::= IdList ':' type ';'
+IdList ::= identifier {',' identifier}
+selector ::= { '.' (  identifier |  integer ) | '[' expression ']'}
+factor ::= identifier selector | LogicValue | integer |
+	'~' factor | '^' factor | '(' expression ')'   // original is ↑ statt ^
+	| MUX '(' 
+		expression 
+		( ':' expression ',' expression 
+		| ',' expression ':' expression ',' expression ',' expression ',' expression
+		)
+		')' 
+	| REG '(' expression [',' expression] ')' 
+	| LATCH '(' expression ',' expression ')' 
+	| SR '(' expression ',' expression ')' 
+term ::= factor {('*' | '/' | DIV | MOD) factor}
+expression ::= term {('+' | '−') term}
+assignment- ::= identifier selector ':=' [condition '|'] expression
+condition ::= expression
+relation ::= expression ('=' | '#' | '<' | '<=' | '>' | '>=') expression
+IfStatement ::= IF relation THEN StatementSequence
+	{ELSIF relation THEN StatementSequence}
+	[ELSE StatementSequence]
+	END 
+ForStatement ::= FOR identifier ':=' expression '..' expression DO StatementSequence END
+assignmentOrUnitAssignment ::= 
+	identifier selector  ( 
+	':=' condition ['|' expression] // original [condition '|']
+	| '(' ExpressionList ')' )
+statement ::= [assignmentOrUnitAssignment | IfStatement | ForStatement]
+StatementSequence ::= statement {';' statement}
+module ::= MODULE identifier ';'
+	{TypeDeclaration ';'}
+	[CONST {ConstDeclaration}]
+	[IN {VarDeclaration}]
+	[INOUT {VarDeclaration}]
+	[OUT {VarDeclaration}]
+	[VAR {VarDeclaration}]
+	[BEGIN StatementSequence]
+	END identifier '.' 
+FormalType ::= {'[' [expression] ']'} BIT
+FormalBusType ::= {'[' [expression] ']'} (TS | OC)
+TypeDeclaration ::= TYPE identifier ['*'] ['(' IdList ')'] ';'
+	[CONST {ConstDeclaration}]
+	[IN {IdList ':' FormalType ';'}]
+	[INOUT {IdList ':' FormalBusType ';'}]
+	[OUT {VarDeclaration}]
+	[VAR {VarDeclaration}]
+	[BEGIN StatementSequence]
+	END identifier
+UnitAssignment- ::= identifier selector '(' ExpressionList ')'
+
+// Pragmas
+
+%module ::= 'Lola'
+%namespace ::= 'La1'
