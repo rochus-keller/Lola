@@ -27,7 +27,7 @@ TEMPLATE = app
 
 INCLUDEPATH +=  ..
 
-SOURCES += main.cpp
+SOURCES += mainTest.cpp
 
 include( Lola.pri )
 
