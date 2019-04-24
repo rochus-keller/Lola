@@ -55,6 +55,7 @@ namespace Ll
         Token ident();
         Token number();
         Token comment();
+        void parseComment( const QByteArray& str, int& pos, int& level );
     private:
         QIODevice* d_in;
         Errors* d_err;

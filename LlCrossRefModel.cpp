@@ -604,7 +604,7 @@ void CrossRefModel::fillAst(Branch* parentAst, Scope* superScope, SynTreePath& s
             if( pt == SynTree::R_module )
             {
                 // hier kommen nur Idents an, die sich unmittelbar unter der Scope Production befinden
-                Q_ASSERT( parent->d_children.size() == 5 ); // MODULE identifier unit identifier '.'
+                Q_ASSERT( parent->d_children.size() == 4 ); // MODULE identifier unit identifier
                 if( child == parent->d_children[1] )
                 {
                     sym = new IdentDecl();

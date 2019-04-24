@@ -107,7 +107,7 @@ public:
 Ll::SynTree d_root;
 	QStack<Ll::SynTree*> d_stack;
 	void addTerminal() {
-		if( d_cur.d_type != Ll::Tok_Semi ){
+		if( d_cur.d_type != Ll::Tok_Semi && d_cur.d_type != Ll::Tok_Comma && d_cur.d_type != Ll::Tok_Dot && d_cur.d_type != Ll::Tok_Colon ){
 			Ll::SynTree* n = new Ll::SynTree( d_cur ); d_stack.top()->d_children.append(n);
 		}
 	}

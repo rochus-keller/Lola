@@ -93,4 +93,4 @@ Comment ::=
 
 %module ::= 'Lola'
 %namespace ::= 'Ll'
-%suppress ::= ';'
+%suppress ::= ';' ',' '.' ':'
